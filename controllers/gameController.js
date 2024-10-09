@@ -114,3 +114,30 @@ exports.updateGameResults = async (req, res) => {
   }
 };
 
+exports.offerDraw = async (req, res) => {
+  try {
+    const { gameId } = req.body;
+    const userId = req.user.id;
+
+    const game = await Game.findById(gameId);
+    if (!game || game.result !== 'ongoing') {
+      return res.status(404).json({ message: 'Game not found or has ended' });
+    }
+
+    // If both players agree to the draw, end the game as a draw
+    if (game.offeredDraw && game.offeredDraw.equals(userId)) {
+      game.result = 'draw';
+      game.endTime = Date.now();
+      await game.save();
+      return res.json({ message: 'Game ended in a draw', game });
+    }
+
+    // Offer a draw
+    game.offeredDraw = userId;
+    await game.save();
+    res.json({ message: 'Draw offer sent', game });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
