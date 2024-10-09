@@ -1,6 +1,6 @@
 const Game = require('../models/Game');
 const chess = require('chess.js').Chess;
-const User = require('../models/User);
+const User = require('../models/User');
 exports.createGame = async (req, res) => {
   const { opponentId, clockTime } = req.body;
   try {
