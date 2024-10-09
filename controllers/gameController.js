@@ -42,3 +42,34 @@ exports.getGame = async (req, res) => {
     res.status(400).json({ error: 'Error fetching game' });
   }
 };
+
+exports.getGameHistory = async (req, res) => {
+  try {
+    const userId = req.user.id;  // Logged-in user's ID
+
+    // Find all games where the user is one of the players
+    const games = await Game.find({ players: userId })
+      .populate('players', 'username')  // Populate player information (e.g., usernames)
+      .sort({ createdAt: -1 });  // Sort by most recent games first
+
+    // Format the response
+    const gameHistory = games.map(game => {
+      // Find the opponent (the other player)
+      const opponent = game.players.find(player => player._id.toString() !== userId.toString());
+
+      return {
+        gameId: game._id,
+        opponent: opponent.username,
+        result: game.result,  // win, loss, draw
+        winner: game.winner ? game.winner.username : 'N/A',
+        moves: game.moves,  // List of moves in PGN format
+        createdAt: game.createdAt
+      };
+    });
+
+    res.json(gameHistory);  // Return the game history as JSON
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching game history' });
+  }
+};
+
