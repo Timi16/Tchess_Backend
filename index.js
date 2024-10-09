@@ -42,6 +42,13 @@ io.on('connection', (socket) => {
   socket.on('clockUpdate', ({ gameId, clock }) => {
     io.to(gameId).emit('clockUpdate', clock);
   });
+  socket.on('joinChallenge', (challengeLink) => {
+    socket.join(challengeLink);  // Both challenger and opponent join the same room
+  });
+
+  socket.on('acceptChallenge', (challengeLink, gameId) => {
+    io.to(challengeLink).emit('gameStarted', { gameId });  // Notify both players
+  });
 });
 
 // Start the server
