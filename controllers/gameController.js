@@ -1,6 +1,6 @@
 const Game = require('../models/Game');
 const chess = require('chess.js').Chess;
-
+const User = require('../models/User);
 exports.createGame = async (req, res) => {
   const { opponentId, clockTime } = req.body;
   try {
@@ -70,6 +70,47 @@ exports.getGameHistory = async (req, res) => {
     res.json(gameHistory);  // Return the game history as JSON
   } catch (error) {
     res.status(500).json({ error: 'Error fetching game history' });
+  }
+};
+
+// Elo update logic function
+const updateElo = (playerRating, opponentRating, score) => {
+  const K = 32; // K-factor
+  const expectedScore = 1 / (1 + 10 ** ((opponentRating - playerRating) / 400));
+  const newRating = playerRating + K * (score - expectedScore);
+  return Math.round(newRating);
+};
+
+// Controller function for updating Elo after a game result
+exports.updateGameResults = async (req, res) => {
+  const { gameId } = req.body;
+
+  try {
+    const game = await Game.findById(gameId).populate('players');
+    const [player1, player2] = game.players;
+
+    let score1, score2;
+
+    // Determine the result and scores
+    if (game.result === 'win') {
+      score1 = game.winner.equals(player1._id) ? 1 : 0;
+      score2 = game.winner.equals(player2._id) ? 1 : 0;
+    } else if (game.result === 'draw') {
+      score1 = 0.5;
+      score2 = 0.5;
+    }
+
+    // Update Elo for both players
+    player1.elo = updateElo(player1.elo, player2.elo, score1);
+    player2.elo = updateElo(player2.elo, player1.elo, score2);
+
+    // Save updated ratings
+    await player1.save();
+    await player2.save();
+
+    res.json({ message: 'Elo ratings updated', player1Elo: player1.elo, player2Elo: player2.elo });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating Elo ratings' });
   }
 };
 
