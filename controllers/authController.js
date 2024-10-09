@@ -96,9 +96,11 @@ exports.getProfile = async (req, res) => {
     }
     res.json(user);
   } catch (err) {
+    console.error(err); // Log error for further inspection
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 // Update profile
 exports.updateProfile = async (req, res) => {

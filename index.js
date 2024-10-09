@@ -28,7 +28,7 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);  
 app.use('/api/game', gameRoutes);
-app.use('/api/challenge', challengeRoutes);
+app.use('/api/', challengeRoutes);
 // WebSocket events
 io.on('connection', (socket) => {
   socket.on('joinGame', (gameId) => {
