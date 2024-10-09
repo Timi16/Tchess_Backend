@@ -1,14 +1,20 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const http = require('http');
+const socketIo = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes'); 
+const gameRoutes = require('./routes/gameRoutes');
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
+
 const PORT = process.env.PORT || 5000;
 
 // Middleware
@@ -21,6 +27,22 @@ connectDB();
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);  
+app.use('/api/game', gameRoutes);
+
+// WebSocket events
+io.on('connection', (socket) => {
+  socket.on('joinGame', (gameId) => {
+    socket.join(gameId);
+  });
+
+  socket.on('move', ({ gameId, move }) => {
+    io.to(gameId).emit('move', move);
+  });
+
+  socket.on('clockUpdate', ({ gameId, clock }) => {
+    io.to(gameId).emit('clockUpdate', clock);
+  });
+});
 
 // Start the server
 app.listen(PORT, () => {
