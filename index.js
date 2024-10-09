@@ -8,7 +8,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes'); 
 const gameRoutes = require('./routes/gameRoutes');
-
+const challengeRoutes = require('./routes/challengeRoutes');
 dotenv.config();
 
 const app = express();
@@ -28,7 +28,7 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);  
 app.use('/api/game', gameRoutes);
-
+app.use('/api/challenge', challengeRoutes);
 // WebSocket events
 io.on('connection', (socket) => {
   socket.on('joinGame', (gameId) => {

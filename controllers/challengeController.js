@@ -1,6 +1,6 @@
-const Game = require('../models/game');
-const Challenge = require('../models/challenge');
-const User = require('../models/user');
+const Game = require('../models/Game');
+const Challenge = require('../models/Challenge');
+const User = require('../models/User');
 
 exports.createChallenge = async (req, res) => {
   try {
